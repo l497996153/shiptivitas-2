@@ -128,6 +128,7 @@ app.put('/api/v1/clients/:id', (req, res) => {
   /* ---------- Update code below ----------*/
 
 
+  }
 
   return res.status(200).send(clients);
 });
