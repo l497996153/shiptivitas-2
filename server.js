@@ -127,7 +127,28 @@ app.put('/api/v1/clients/:id', (req, res) => {
 
   /* ---------- Update code below ----------*/
 
-
+  
+  if(status != client.status){
+    maxPriority = db.prepare(`select * from clients where status = ${status}`).all(priority);
+    if(!priority || priority > maxPriority.length + 1)
+      priority = maxPriority.length + 1
+    db.prepare(`update clients set priority = priority - 1 where status = "${client.status}" and priority > ${client.priority}`).run();
+    db.prepare(`update clients set priority = priority + 1 where status = ${status}" and priority >= ${priority}`).run();
+    db.prepare(`update clients set priority = ${priority}, status = ${status} where id = ${client.id}`).run();
+  }
+  else{
+    maxPriority = db.prepare(`select * from clients where status = ${status}`).all(priority);
+    if(priority){
+      if(priority > client.priority)
+        db.prepare(`update clients set priority = priority - 1 where status = "${client.status}" and priority > ${client.priority} and priority <= ${priority}`).run();
+      if(priority < client.priority)
+        db.prepare(`update clients set priority = priority + 1 where status = "${client.status}" and priority >= ${priority} and priority < ${client.priority}`).run();
+      db.prepare(`update clients set priority = ${priority} where id = ${client.id}`).run();
+    }
+    else{
+      priority = maxPriority.length + 1
+      db.prepare(`update clients set priority = ${priority} where id = ${client.id}`).run();
+    }
   }
 
   return res.status(200).send(clients);
